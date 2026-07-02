@@ -1,3 +1,6 @@
+import importlib.util
+from pathlib import Path
+
 import numpy as np
 import functools
 
@@ -5,7 +8,20 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset
-from dataloader.augmentations import DataTransform_time_freq
+
+
+def _load_tfcc_augmentations():
+    aug_path = Path(__file__).resolve().parent / "dataloader" / "augmentations.py"
+    spec = importlib.util.spec_from_file_location("tfcc_augmentations", aug_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Could not load augmentation module from {aug_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+tfcc_augmentations = _load_tfcc_augmentations()
+DataTransform_time_freq = tfcc_augmentations.DataTransform_time_freq
 
 def time_2_freq(time):
     # freq = np.fft.fft(time)[:,:,:time.shape[-1] // 2]

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-#SBATCH -A NAISS2025-22-52 -p alvis
-#SBATCH -t 02:00:00
+#SBATCH -A NAISS2026-4-351 -p alvis
+#SBATCH -t 00:30:00
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=A40:1
 #SBATCH --job-name=TFCC_PAMAP2
 #SBATCH --array=1-4
-#SBATCH --output=SlurmRecords/TFCC_PAMAP2_%A_%a.out
+#SBATCH --output=logs/TFCC_PAMAP2_%A_%a.out
 
 module purge
 module load PyTorch-bundle/2.1.2-foss-2023a-CUDA-12.1.1

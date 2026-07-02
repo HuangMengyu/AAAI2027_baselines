@@ -2,6 +2,18 @@ import os
 import numpy as np
 from torch.utils.data import DataLoader
 import torch
+import os
+import sys
+
+_PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+while _PROJECT_ROOT and not os.path.isdir(os.path.join(_PROJECT_ROOT, 'common_utils')):
+    _PARENT = os.path.dirname(_PROJECT_ROOT)
+    if _PARENT == _PROJECT_ROOT:
+        break
+    _PROJECT_ROOT = _PARENT
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+
 from common_utils.dataset_loader import get_path_loader_new, get_idx
 from sklearn.metrics import roc_auc_score, accuracy_score, f1_score, balanced_accuracy_score
 from base_models import FTDataSet
