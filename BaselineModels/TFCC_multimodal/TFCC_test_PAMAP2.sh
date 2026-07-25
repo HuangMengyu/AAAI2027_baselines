@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-#SBATCH -A NAISS2025-22-1224 -p alvis
+#SBATCH -A NAISS2026-4-351 -p alvis
 #SBATCH -t 00:30:00
 #SBATCH --ntasks=1
-#SBATCH --gpus-per-node=A40:1
+#SBATCH --gpus-per-node=A100:1
 #SBATCH --job-name=TFCC-test
 #SBATCH --output=logs/test/PAMAP2_%A.out
 
@@ -23,6 +23,6 @@ cd /mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/TF
 
 python test.py \
     --dataset_name PAMAP2 \
-    --checkpoint_path checkpoints/TFCC_multimodal_fnAB_cancel_PAMAP2_topk0.08 \
+    --checkpoint_path /mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/TFCC_multimodal/checkpoints/warmup1_fnABC_cancel_PAMAP2_topk0.07 \
     --final_out_channels 128 \
     --output_dims 127

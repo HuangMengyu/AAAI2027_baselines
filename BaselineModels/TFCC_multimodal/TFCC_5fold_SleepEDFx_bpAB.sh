@@ -30,7 +30,7 @@ python main_5fold.py \
     --current_num_fold ${SLURM_ARRAY_TASK_ID} \
     --epochs 10 \
     --epochs_ft 10 \
-    --warm_epochs 5 \
+    --warm_epochs 2 \
     --option 'bp_AB' \
     --fn_mode 'cancel' \
     --model_save_path checkpoints/TFCC_multimodal_bpAB_SleepEDFx \

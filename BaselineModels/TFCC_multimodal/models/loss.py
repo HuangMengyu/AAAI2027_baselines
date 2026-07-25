@@ -106,40 +106,51 @@ class InfoNCE(nn.Module):
         out = torch.cat([out_1, out_2], dim=0)
         out_dist = torch.cat([out_1_dist, out_2_dist], dim=0)
 
-        pos = torch.exp(torch.sum(out_1 * out_2, dim=-1) / self.temperature)
+        # Stable InfoNCE computation using log-sum-exp
+        # sim: (2N, 2N) similarity logits (no exp yet)
+        sim = torch.mm(out, out_dist.t()) / self.temperature
 
-        pos = torch.cat([pos, pos], dim=0)
-        # print('pos:', pos.shape)
+        # positive pair scores (2N,)
+        pos_scores = torch.sum(out_1 * out_2, dim=-1) / self.temperature
+        pos_scores = torch.cat([pos_scores, pos_scores], dim=0)
 
-        similarity = torch.exp(torch.mm(out, out_dist.t()) / self.temperature)
-        # similarity = torch.mm(out, out_dist.t())
+        if not self.filter:
+            # loss_i = - (log_pos - logsumexp(all_scores))
+            logsumexp_all = torch.logsumexp(sim, dim=1)
+            loss_vec = - (pos_scores - logsumexp_all)
+            loss_mat = loss_vec.view(2, bsz)
+            pos_loss = torch.mean(loss_mat, dim=0)
+            return pos_loss
 
-        neg_mask = self.mask_correlated_samples(bsz).to(self.device)
+        # FILTER mode: identify false negatives (fn) by topk on negative logits
+        neg_mask = self.mask_correlated_samples(bsz).to(self.device)  # True for negatives
+        NEG_INF = torch.tensor(-1e9, device=sim.device, dtype=sim.dtype)
 
-        neg_temp = similarity * neg_mask
+        # keep only negative positions, set others to -inf for logsumexp safety
+        sim_neg = sim.masked_fill(~neg_mask, NEG_INF)
 
-        if self.filter:
-            neg_temp = torch.where(neg_temp == 0.0, torch.tensor(-9e15).to(self.device), neg_temp) # avoid the positive indices got selected
-            topk_num = max(int(bsz * self.topk), 1)
-            thresholds, _ = torch.topk(neg_temp, topk_num, dim=1)
-            per_row_threshold = thresholds[:, -1].unsqueeze(1) # [2*bsz, 1]
-            print("self.fn_mode", self.fn_mode)
-            if self.fn_mode == 'attract':
-                fn_mask = (neg_temp > per_row_threshold)
-                fn_scores = torch.where(fn_mask, neg_temp, 0.0)
-                fn_sum_per_row = torch.sum(fn_scores , dim=1)
-                # print('fn_sum_per_row:', fn_sum_per_row.shape)
-                pos = pos + fn_sum_per_row
-            # neg_temp = neg_temp * neg_mask
-            neg_temp = torch.where((neg_temp > per_row_threshold) & (neg_temp == -9e15), 0.0, neg_temp) # filter false negatives
-            
+        topk_num = max(int(bsz * self.topk), 1)
+        thresholds, _ = torch.topk(sim_neg, topk_num, dim=1)
+        per_row_threshold = thresholds[:, -1].unsqueeze(1)
+        fn_mask = sim_neg >= per_row_threshold
 
-        neg = torch.sum(neg_temp, 1)
-        
+        # If attract mode, incorporate selected false negatives into positive score (log-domain)
+        if self.fn_mode == 'attract':
+            fn_logsum = torch.logsumexp(sim_neg.masked_fill(~fn_mask, NEG_INF), dim=1)
+            pos_prime = torch.logsumexp(torch.stack([pos_scores, fn_logsum], dim=1), dim=1)
+        else:
+            pos_prime = pos_scores
 
-        logits = -torch.log(pos / (pos + neg))
-        logits_re = logits.view(2, -1)
-        pos_loss = torch.mean(logits_re, dim=0)
+        # remove false negatives from negatives
+        sim_neg_filtered = sim_neg.masked_fill(fn_mask, NEG_INF)
+        log_neg_sum = torch.logsumexp(sim_neg_filtered, dim=1)
+
+        # denominator in log-domain: log(exp(pos_prime) + exp(log_neg_sum))
+        log_denom = torch.logsumexp(torch.stack([pos_prime, log_neg_sum], dim=1), dim=1)
+
+        loss_vec = - (pos_prime - log_denom)
+        loss_mat = loss_vec.view(2, bsz)
+        pos_loss = torch.mean(loss_mat, dim=0)
 
         return pos_loss
 

@@ -17,10 +17,10 @@ echo "Running on node: $SLURMD_NODENAME"
 export CUDA_LAUNCH_BLOCKING=1
 export TORCH_DISTRIBUTED_DEBUG=DETAIL
 
-export PYTHONPATH="/mimer/NOBACKUP/groups/naiss2025-22-1224/KDD2026_TriAFNM:$PYTHONPATH"
+export PYTHONPATH="/mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines:$PYTHONPATH"
 
 # cd /mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/TFCC_multimodal
-cd /mimer/NOBACKUP/groups/naiss2025-22-1224/KDD2026_TriAFNM
+cd /mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines
 
 python BaselineModels/TFCC_multimodal/test.py \
     --dataset_name UCI-HAR \

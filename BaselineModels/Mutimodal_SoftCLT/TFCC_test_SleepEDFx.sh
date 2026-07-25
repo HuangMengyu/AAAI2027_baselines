@@ -10,6 +10,7 @@ module purge
 module load PyTorch-bundle/2.1.2-foss-2023a-CUDA-12.1.1
 module load scikit-learn/1.4.2-gfbf-2023a
 module load einops/0.7.0-GCCcore-12.3.0
+source torch_env/bin/activate
 
 echo ${CUDA_VISIBLE_DEVICES}
 echo "Running on node: $SLURMD_NODENAME"
@@ -23,6 +24,6 @@ cd /mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/Mu
 
 python test.py \
     --dataset_name SleepEDFx \
-    --checkpoint_path checkpoints/SoftCLT_SleepEDFx_newDTW_20260207 \
+    --checkpoint_path checkpoints/SoftCLT_SleepEDFx_newDTW \
     --final_out_channels 128 \
     --output_dims 127

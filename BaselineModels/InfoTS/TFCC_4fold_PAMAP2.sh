@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
-#SBATCH -A NAISS2025-22-52 -p alvis
-#SBATCH -t 01:00:00
+#SBATCH -A NAISS2026-4-117 -p alvis
+#SBATCH -t 00:30:00
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=A40:1
 #SBATCH --job-name=InfoTS_PAMAP2
 #SBATCH --array=1-4
-#SBATCH --output=SlurmRecords/InfoTS_PAMAP2_%A_%a.out
+#SBATCH --output=logs/InfoTS_PAMAP2_%A_%a.out
 
 module purge
 module load PyTorch-bundle/2.1.2-foss-2023a-CUDA-12.1.1
 module load scikit-learn/1.4.2-gfbf-2023a
 module load einops/0.7.0-GCCcore-12.3.0
-# virtualenv --system-site-packages my_venv
-source my_venv/bin/activate
-# pip install tsaug
+python -m venv tsaug_venv
+source tsaug_venv/bin/activate
+pip install tsaug
 
 export CUDA_LAUNCH_BLOCKING=1
 export TORCH_DISTRIBUTED_DEBUG=DETAIL

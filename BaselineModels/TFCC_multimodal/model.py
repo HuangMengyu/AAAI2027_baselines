@@ -305,11 +305,12 @@ class TFCC(nn.Module):
         EOG_feat = F.normalize(EOG_feat, dim=1)
         EOG_aug_feat = F.normalize(EOG_aug_feat, dim=1)
 
-        L_T, c_T = self.EEG_contrasting(EEG_feat, EEG_aug_feat)
-        L_T_aug, c_T_aug = self.EEG_contrasting(EEG_aug_feat, EEG_feat)
+        filter_tc = 'C' in nf_option
+        L_T, c_T = self.EEG_contrasting(EEG_feat, EEG_aug_feat, filter=filter_tc, topk=topk, fn_mode=fn_mode)
+        L_T_aug, c_T_aug = self.EEG_contrasting(EEG_aug_feat, EEG_feat, filter=filter_tc, topk=topk, fn_mode=fn_mode)
 
-        L_F, c_F = self.EOG_contrasting(EOG_feat, EOG_aug_feat)
-        L_F_aug, c_F_aug = self.EOG_contrasting(EOG_aug_feat, EOG_feat)
+        L_F, c_F = self.EOG_contrasting(EOG_feat, EOG_aug_feat, filter=filter_tc, topk=topk, fn_mode=fn_mode)
+        L_F_aug, c_F_aug = self.EOG_contrasting(EOG_aug_feat, EOG_feat, filter=filter_tc, topk=topk, fn_mode=fn_mode)
 
 
         # nt_xent_criterion = NTXentLoss_poly(self.device, self.batch_size, 0.2, True) # device, 128, 0.2, True
@@ -317,7 +318,7 @@ class TFCC(nn.Module):
         # L_C_T = nt_xent_criterion(c_T, c_T_aug)
         # L_C_F = nt_xent_criterion(c_F, c_F_aug)
 
-        if nf_option in ['A', 'AB']:
+        if 'A' in nf_option:
             # print("Applying false negative cancellation in position A...")
             L_C_T = loss_ntxent([c_T, c_T_aug], self.device, filter=True, topk=topk, fn_mode = fn_mode)
             L_C_F = loss_ntxent([c_F, c_F_aug], self.device, filter=True, topk=topk, fn_mode = fn_mode)
@@ -360,7 +361,7 @@ class TFCC(nn.Module):
         ############################ Compute Triple Loss End ##############################
 
         ############################ Compute Contrastive Loss Instead ##############################
-        if nf_option in ['B', 'AB']:
+        if 'B' in nf_option:
             L_C_TF = loss_ntxent([c_T, c_F], self.device, filter=True, topk=topk, fn_mode = fn_mode)
         else:
             L_C_TF = loss_ntxent([c_T, c_F], self.device, filter=False)

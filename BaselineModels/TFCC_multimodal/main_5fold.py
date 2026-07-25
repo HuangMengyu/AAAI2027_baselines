@@ -8,6 +8,18 @@ from tqdm import tqdm, trange
 from sklearn.metrics import roc_auc_score, accuracy_score, f1_score, balanced_accuracy_score
 
 from model import Model as tfcc_model
+import os
+import sys
+
+_PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+while _PROJECT_ROOT and not os.path.isdir(os.path.join(_PROJECT_ROOT, 'common_utils')):
+    _PARENT = os.path.dirname(_PROJECT_ROOT)
+    if _PARENT == _PROJECT_ROOT:
+        break
+    _PROJECT_ROOT = _PARENT
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+
 from common_utils.dataset_loader import get_path_loader_new, get_idx, get_loader
 from base_models import SSLDataSet, FTDataSet
 
@@ -289,7 +301,7 @@ if __name__ == '__main__':
     parser.add_argument('--repr-dims', type=int, default=320, help='The representation dimension (defaults to 320)')
     parser.add_argument('--max-train-length', type=int, default=3000, help='For sequence with a length greater than <max_train_length>, it would be cropped into some sequences, each of which has a length less than <max_train_length> (defaults to 3000)')
     
-    parser.add_argument('--option', type=str, default='bp_A', help='The way of adding bad positive / false negative, option in [none_none, bp_A, bp_B, bp_AB, fn_A, fn_B, fn_AB, bpfn_A, bpfn_B, bpfn_AB]')
+    parser.add_argument('--option', type=str, default='bp_A', help='The way of adding bad positive / false negative, option in [none_none, bp_A, bp_B, bp_AB, fn_A, fn_B, fn_C, fn_AB, fn_AC, fn_BC, fn_ABC, bpfn_A, bpfn_B, bpfn_AB]')
     parser.add_argument('--topk', type=float, default=0.25, help='The percentage of each batch to be filtered when false negative cancellation.')
     parser.add_argument('--fn_mode', type=str, default='cancel', help='false negative removal mode, options in [cancel, attract]')
     parser.add_argument('--use_iteration', type=str2bool, default=False, help='whether to use iteration instead of epoches for training.')

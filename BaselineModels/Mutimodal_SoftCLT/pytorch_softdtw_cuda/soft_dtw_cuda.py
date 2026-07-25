@@ -52,8 +52,16 @@ def compute_softdtw_cuda(D, gamma, bandwidth, max_i, max_j, n_passes, R):
     # Go over each anti-diagonal. Only process threads that fall on the current on the anti-diagonal
     for p in range(n_passes):
 
-        # The index is actually 'p - tid' but need to force it in-bounds
-        J = max(0, min(p - tid, max_j - 1))
+        # The index is actually 'p - tid' but need to force it in-bounds.
+        # Avoid Python min/max/abs builtins here: newer Numba CUDA versions
+        # can mis-type them during kernel compilation.
+        j_idx = p - tid
+        if j_idx < 0:
+            J = 0
+        elif j_idx > max_j - 1:
+            J = max_j - 1
+        else:
+            J = j_idx
 
         # For simplicity, we define i, j which start from 1 (offset from I, J)
         i = I + 1
@@ -62,11 +70,18 @@ def compute_softdtw_cuda(D, gamma, bandwidth, max_i, max_j, n_passes, R):
         # Only compute if element[i, j] is on the current anti-diagonal, and also is within bounds
         if I + J == p and (I < max_i and J < max_j):
             # Don't compute if outside bandwidth
-            if not (abs(i - j) > bandwidth > 0):
+            diff = i - j
+            if diff < 0:
+                diff = -diff
+            if not (diff > bandwidth and bandwidth > 0):
                 r0 = -R[b, i - 1, j - 1] * inv_gamma
                 r1 = -R[b, i - 1, j] * inv_gamma
                 r2 = -R[b, i, j - 1] * inv_gamma
-                rmax = max(max(r0, r1), r2)
+                rmax = r0
+                if r1 > rmax:
+                    rmax = r1
+                if r2 > rmax:
+                    rmax = r2
                 rsum = math.exp(r0 - rmax) + math.exp(r1 - rmax) + math.exp(r2 - rmax)
                 softmin = -gamma * (math.log(rsum) + rmax)
                 R[b, i, j] = D[b, i - 1, j - 1] + softmin
@@ -89,7 +104,13 @@ def compute_softdtw_backward_cuda(D, R, inv_gamma, bandwidth, max_i, max_j, n_pa
         rev_p = n_passes - p - 1
 
         # convert tid to I, J, then i, j
-        J = max(0, min(rev_p - tid, max_j - 1))
+        j_idx = rev_p - tid
+        if j_idx < 0:
+            J = 0
+        elif j_idx > max_j - 1:
+            J = max_j - 1
+        else:
+            J = j_idx
 
         i = I + 1
         j = J + 1
@@ -101,7 +122,10 @@ def compute_softdtw_backward_cuda(D, R, inv_gamma, bandwidth, max_i, max_j, n_pa
                 R[k, i, j] = -math.inf
 
             # Don't compute if outside bandwidth
-            if not (abs(i - j) > bandwidth > 0):
+            diff = i - j
+            if diff < 0:
+                diff = -diff
+            if not (diff > bandwidth and bandwidth > 0):
                 a = math.exp((R[k, i + 1, j] - R[k, i, j] - D[k, i + 1, j]) * inv_gamma)
                 b = math.exp((R[k, i, j + 1] - R[k, i, j] - D[k, i, j + 1]) * inv_gamma)
                 c = math.exp((R[k, i + 1, j + 1] - R[k, i, j] - D[k, i + 1, j + 1]) * inv_gamma)

@@ -33,12 +33,13 @@ def channel_separation(time, dataset_name='SleepEDFx'):
         # assert acc_channels.shape == (9, 200)
         # assert gyro_channels.shape == (9, 200)
         return acc_channels, gyro_channels
-    elif dataset_name == 'UCI-HAR':
+    elif dataset_name in ('UCI-HAR', 'UCI-HAR_total'):
         acc_channels = time[:-3, :]
         gyro_channels = time[-3:, :]
         assert acc_channels.shape == (3, 128)
         assert gyro_channels.shape == (3, 128)
         return acc_channels, gyro_channels
+    raise ValueError(f"Unsupported dataset_name for channel_separation: {dataset_name}")
 
 def convert_time_to_freq(time_batches):
     freq_batches = []

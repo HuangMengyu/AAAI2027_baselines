@@ -1,15 +1,12 @@
 #!/usr/bin/env bash
-#SBATCH -A NAISS2025-22-52 -p alvis
+#SBATCH -A NAISS2026-4-351 -p alvis
 #SBATCH -t 00:30:00
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=A40:1
 #SBATCH --job-name=TFCC-test
-#SBATCH --array=1-6
-# #SBATCH --output=SlurmRecords_results/fn_ABC_UCI-HAR_%A_%a.out
+#SBATCH --array=5-6
 
-# mkdir -p SlurmRecords_results SlurmRecords_results_UCI-HAR
-
-input_file=/mimer/NOBACKUP/groups/naiss2025-22-1224/KDD2026_TriAFNM/BaselineModels/TFCC_multimodal/test_cancel_attract.txt
+input_file=/mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/TFCC_multimodal/test_cancel_attract.txt
 # Load parameters safely
 source <(sed -n "${SLURM_ARRAY_TASK_ID}p" "$input_file")
 
@@ -23,13 +20,14 @@ echo "Running on node: $SLURMD_NODENAME"
 
 export CUDA_LAUNCH_BLOCKING=1
 export TORCH_DISTRIBUTED_DEBUG=DETAIL
-export PYTHONPATH="/mimer/NOBACKUP/groups/naiss2025-22-1224/KDD2026_TriAFNM:$PYTHONPATH"
+export PYTHONPATH="/mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines:$PYTHONPATH"
 
 # cd /mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/TFCC_multimodal
-cd /mimer/NOBACKUP/groups/naiss2025-22-1224/KDD2026_TriAFNM
+cd /mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/TFCC_multimodal/
 
-srun --output="BaselineModels/TFCC_multimodal/SlurmRecords_results_rerun_paper_setting_v2/${file_name}_%A_%a.out" \
-python BaselineModels/TFCC_multimodal/test.py \
+
+srun --output="logs/test/${file_name}_%A_%a.out" \
+python test.py \
     --dataset_name ${dataset} \
     --checkpoint_path checkpoints/${file_name} \
     --final_out_channels 128 \

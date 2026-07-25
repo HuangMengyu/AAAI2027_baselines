@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-#SBATCH -A NAISS2025-22-52 -p alvis
+#SBATCH -A NAISS2026-4-117 -p alvis
 #SBATCH -t 08:00:00
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=A40:1
 #SBATCH --job-name=TFCC_supervised_SleepEDFx
 #SBATCH --array=1-5
-#SBATCH --output=SlurmRecords/TFCC_supervised_SleepEDFx_%A_%a.out
+#SBATCH --output=logs/SleepEDFx/supervised_SleepEDFx_%A_%a.out
 
 module purge
 module load PyTorch-bundle/2.1.2-foss-2023a-CUDA-12.1.1
@@ -30,10 +30,10 @@ python main_5fold.py \
     --current_num_fold ${SLURM_ARRAY_TASK_ID} \
     --epochs 10 \
     --epochs_ft 10 \
-    --warm_epochs 5 \
+    --warm_epochs 2 \
     --option 'None_None' \
     --fn_mode 'cancel' \
-    --model_save_path checkpoints/TFCC_multimodal_supervised_SleepEDFx \
+    --model_save_path checkpoints/supervised_SleepEDFx \
     --batch_size 128 \
     --topk 0.05 \
     --use_iteration False \

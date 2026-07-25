@@ -8,6 +8,18 @@ from tqdm import tqdm, trange
 from sklearn.metrics import roc_auc_score, accuracy_score, f1_score, balanced_accuracy_score
 
 from model import Model as tfcc_model
+import os
+import sys
+
+_PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+while _PROJECT_ROOT and not os.path.isdir(os.path.join(_PROJECT_ROOT, 'common_utils')):
+    _PARENT = os.path.dirname(_PROJECT_ROOT)
+    if _PARENT == _PROJECT_ROOT:
+        break
+    _PROJECT_ROOT = _PARENT
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+
 from common_utils.dataset_loader import get_path_loader_new, get_idx, get_loader
 from base_models import SSLDataSet, FTDataSet
 from dataloader.dataloader import *
@@ -465,7 +477,7 @@ if __name__ == '__main__':
          
 
         if soft_instance:
-            MAT_save_dir = f'/mimer/NOBACKUP/groups/naiss2025-23-22/mengyu_temporal_storage/data/{dataset_name}/{dataset_name}_{seed}_{i}'
+            MAT_save_dir = f'data/{dataset_name}/{dataset_name}_{seed}_{i}'
             if not os.path.exists(MAT_save_dir):
                 os.makedirs(MAT_save_dir, exist_ok=True)
             
@@ -474,23 +486,15 @@ if __name__ == '__main__':
             # else:
             #     MAT_PATH = f'data/{dataset_name}/{dataset_name}_{seed}_{i}/DTW.npy'
             
-            MAT_PATH = f'/mimer/NOBACKUP/groups/naiss2025-23-22/mengyu_temporal_storage/data/{dataset_name}/{dataset_name}_{seed}_{i}/DTW.npy'
-            if os.path.exists(MAT_PATH):
-                sim_mat = np.load(MAT_PATH)
-            else:
-                print(f"Saving soft labels ...")
-                if dataset_name == 'SleepEDFx':
-                    sim_mat = load_sim_matrix(dataset_name, pretrain_data, MAT_PATH, type_='COS')
-                else:
-                    sim_mat = load_sim_matrix(dataset_name, pretrain_data, MAT_PATH, type_='DTW')
-            dist_mat = 1-sim_mat
-            # soft_labels = densify(-dist_mat, args.tau_inst, args.alpha)
-            soft_labels = densify(-dist_mat, 6, 0.5)
-            soft_labels = torch.tensor(soft_labels, dtype=torch.float32, device=device)
-            del sim_mat, dist_mat
+            MAT_PATH = f'data/{dataset_name}/{dataset_name}_{seed}_{i}/DTW.npy'
+            matrix_type = 'COS' if dataset_name == 'SleepEDFx' else 'DTW'
+            # Keep the full similarity matrix memory-mapped on CPU. The dense soft
+            # labels are built per batch in model.py to avoid materializing N x N.
+            soft_labels = load_sim_matrix(dataset_name, pretrain_data, MAT_PATH, type_=matrix_type)
         else:
             soft_labels = 0
         
+        exit(0) # exit after computing prior for 1st time
         # # comment out this line when running training
         # continue
 
@@ -565,5 +569,9 @@ if __name__ == '__main__':
         print(f"Pretraining Test AUC: {pretrain_test_auc}, F1: {pretrain_test_F1}, Acc: {pretrain_test_acc}")
         print(f"Finetuning Test AUC: {finetune_test_auc}, F1: {finetune_test_F1}, Acc: {finetune_test_acc}")
         print(f"===================================================")
+
+        if soft_instance and dataset_name == 'SleepEDFx' and os.path.exists(MAT_PATH):
+            os.remove(MAT_PATH)
+            print(f"Deleted soft-label matrix after completed seed: {MAT_PATH}")
         
     

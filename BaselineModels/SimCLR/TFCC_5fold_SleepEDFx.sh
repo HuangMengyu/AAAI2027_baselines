@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-#SBATCH -A NAISS2025-22-117 -p alvis
+#SBATCH -A NAISS2026-4-117 -p alvis
 #SBATCH -t 06:00:00
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=A40:1
 #SBATCH --job-name=SimCLR_SleepEDFx
 #SBATCH --array=1-5
-#SBATCH --output=SlurmRecords/SimCLR_SleepEDFx_%A_%a.out
+#SBATCH --output=logs/SimCLR_SleepEDFx_%A_%a.out
 
 module purge
 module load PyTorch-bundle/2.1.2-foss-2023a-CUDA-12.1.1

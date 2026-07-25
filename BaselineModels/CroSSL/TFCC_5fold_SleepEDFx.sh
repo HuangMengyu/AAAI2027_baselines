@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-#SBATCH -A NAISS2025-22-117 -p alvis
+#SBATCH -A NAISS2026-4-117 -p alvis
 #SBATCH -t 06:00:00
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=A40:1
 #SBATCH --job-name=CroSSL_SleepEDFx
 #SBATCH --array=1-5
-#SBATCH --output=SlurmRecords_0112/CroSSL_SleepEDFx_%A_%a.out
+#SBATCH --output=logs/CroSSL_SleepEDFx_%A_%a.out
 
 module purge
 module load PyTorch-bundle/2.1.2-foss-2023a-CUDA-12.1.1
@@ -34,7 +34,7 @@ python src/main_5fold.py \
     --current_num_fold ${SLURM_ARRAY_TASK_ID} \
     --epochs 10 \
     --option 'None_None' \
-    --model_save_path checkpoints/CroSSL_SleepEDFx_0112 \
+    --model_save_path checkpoints/CroSSL_SleepEDFx \
     --batch_size 128 \
     --lr 1e-3 \
     --ssl True \

@@ -3,14 +3,18 @@
 #SBATCH -t 00:30:00
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=A40:1
-#SBATCH --job-name=TFCC_supervised_UCI-HAR
+#SBATCH --job-name=TFCC_multimodal
 #SBATCH --array=1-5
-#SBATCH --output=SlurmRecords/TFCC_supervised_UCI-HAR_%A_%a.out
+#SBATCH --output=logs/UCI-HAR_total/UCI-HAR_total_%A_%a.out
 
 module purge
 module load PyTorch-bundle/2.1.2-foss-2023a-CUDA-12.1.1
 module load scikit-learn/1.4.2-gfbf-2023a
 module load einops/0.7.0-GCCcore-12.3.0
+
+# python -m venv torch_env
+# source torch_env/bin/activate
+# pip install torchtune
 
 export CUDA_LAUNCH_BLOCKING=1
 export TORCH_DISTRIBUTED_DEBUG=DETAIL
@@ -18,28 +22,21 @@ export TORCH_DISTRIBUTED_DEBUG=DETAIL
 echo ${CUDA_VISIBLE_DEVICES}
 echo "Running on node: $SLURMD_NODENAME"
 
-export PYTHONPATH="/mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/TFCC_multimodal:$PYTHONPATH"
+export PYTHONPATH="/mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/IFND:$PYTHONPATH"
 
-cd /mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/TFCC_multimodal
+cd /mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/IFND
 
 # mkdir -p $TMPDIR/TFCC_multimodal
 # For Testing:
 python main_5fold.py \
-    --seq_len 3000 \
-    --dataset_name UCI-HAR \
+    --seq_len 3000 --in_dim 3 \
+    --dataset_name UCI-HAR_total \
     --current_num_fold ${SLURM_ARRAY_TASK_ID} \
     --epochs 10 \
-    --epochs_ft 10 \
-    --warm_epochs 5 \
-    --option 'None_None' \
-    --fn_mode 'cancel' \
-    --model_save_path checkpoints/TFCC_multimodal_supervised_UCI-HAR \
+    --warm_epochs 1 \
+    --model_save_path checkpoints/UCI-HAR_total \
     --batch_size 128 \
-    --topk 0.05 \
-    --use_iteration False \
-    --num_iter 300 \
     --lr 1e-3 \
     --ssl True \
-    --supervised_baseline True
 
     

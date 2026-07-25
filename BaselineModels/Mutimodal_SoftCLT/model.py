@@ -581,18 +581,20 @@ class TFCC(nn.Module):
 
                     # soft_labels_batch = soft_labels[index][:,index].to(self.device)
 
-                    if hasattr(soft_labels, 'device') and soft_labels.device.type == 'cuda':
-                        soft_labels = soft_labels.cpu()
-                    
-                    index_cpu = index.cpu()
-                    # Slice
-                    soft_labels_batch = soft_labels[index_cpu][:, index_cpu]
+                    index_np = index.detach().cpu().numpy()
 
-                    # 4. Convert result to Tensor and move to GPU for the model
-                    if not isinstance(soft_labels_batch, torch.Tensor):
-                        soft_labels_batch = torch.tensor(soft_labels_batch, dtype=torch.float32)
+                    if isinstance(soft_labels, torch.Tensor):
+                        sim_batch = soft_labels.detach().cpu()[index_np][:, index_np].numpy()
+                    else:
+                        sim_batch = np.asarray(soft_labels[np.ix_(index_np, index_np)], dtype=np.float32)
 
-                    soft_labels_batch = soft_labels_batch.to(self.device)
+                    # Equivalent to densify(-(1 - sim_mat), 6, 0.5), but only for
+                    # the current B x B batch instead of the full N x N matrix.
+                    tau = 6.0
+                    alpha = 0.5
+                    soft_labels_np = (2 * alpha) / (1 + np.exp(-tau * (sim_batch - 1.0)))
+                    soft_labels_np += (1 - alpha) * np.eye(len(index_np), dtype=np.float32)
+                    soft_labels_batch = torch.from_numpy(soft_labels_np.astype(np.float32, copy=False)).to(self.device)
                     # if e >= self.warm_epochs and self.removal_option in ['fn']: # False negative cancellation
                     #     sum_1, L_C_T, L_C_F, L_C_TF, pos_sim_T, pos_sim_F, pos_sim_TF, neg_sim_T, neg_sim_F, neg_sim_TF, num_cancel_t, num_attract_t, num_cancel_f, num_attract_f, num_cancel_tf, num_attract_tf = self.loss_compute(x, pos_option = self.position_option, bounds = bounds)
                     #     num_cancel_t_total += num_cancel_t

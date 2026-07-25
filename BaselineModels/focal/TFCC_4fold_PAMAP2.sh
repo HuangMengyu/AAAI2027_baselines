@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-#SBATCH -A NAISS2025-22-52 -p alvis
-#SBATCH -t 02:00:00
+#SBATCH -A NAISS2026-4-117 -p alvis
+#SBATCH -t 01:00:00
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=A40:1
 #SBATCH --job-name=FOCAL_PAMAP2
 #SBATCH --array=1-4
-#SBATCH --output=SlurmRecords_stft/FOCAL_PAMAP2_%A_%a.out
+#SBATCH --output=logs/FOCAL_PAMAP2_%A_%a.out
 
 module purge
 module load PyTorch-bundle/2.1.2-foss-2023a-CUDA-12.1.1
@@ -13,8 +13,10 @@ module load scikit-learn/1.4.2-gfbf-2023a
 module load einops/0.7.0-GCCcore-12.3.0
 module load IPython/8.14.0-GCCcore-12.3.0
 
-python -m venv torch_env
+# python -m venv torch_env
 source torch_env/bin/activate
+# pip install fastcore==1.7.29 fastai==2.7.18
+# pip install tsai==0.3.9 --no-deps
 
 export CUDA_LAUNCH_BLOCKING=1
 export TORCH_DISTRIBUTED_DEBUG=DETAIL

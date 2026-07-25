@@ -1,7 +1,6 @@
-file_name=TFCC_multimodal_fnAB_attract_PAMAP2_0.08 folder=FN dataset=PAMAP2
-file_name=TFCC_multimodal_fnAB_attract_SleepEDFx_0.08 folder=FN dataset=SleepEDFx
-file_name=TFCC_multimodal_fnAB_attract_UCI-HAR_0.08 folder=FN dataset=UCI-HAR
-file_name=TFCC_multimodal_fnAB_cancel_PAMAP2_topk0.08 folder=FN dataset=PAMAP2
-file_name=TFCC_multimodal_fnAB_cancel_SleepEDFx_0.08 folder=FN dataset=SleepEDFx
-file_name=TFCC_multimodal_fnAB_cancel_UCI-HAR_topk0.08 folder=FN dataset=UCI-HAR
-
+file_name=fnABC_attract_PAMAP2_0.035 folder=FN dataset=PAMAP2
+file_name=fnABC_attract_UCI-HAR_total_0.035 folder=FN dataset=UCI-HAR_total
+file_name=fnABC_cancel_PAMAP2_topk0.07 folder=FN dataset=PAMAP2
+file_name=fnABC_cancel_UCI-HAR_total_topk0.07 folder=FN dataset=UCI-HAR_total
+file_name=fnABC_attract_SleepEDFx_0.035 folder=FN dataset=SleepEDFx
+file_name=fnABC_cancel_SleepEDFx_0.07 folder=FN dataset=SleepEDFx

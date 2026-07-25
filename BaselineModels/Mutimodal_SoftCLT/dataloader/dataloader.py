@@ -630,8 +630,8 @@ def save_cosine_sim_float16(x, save_path, min_ = 0, max_ = 1, block_size=512):
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
     print(f"Creating float16 matrix at {save_path}...")
     
-    # 'w+' creates/overwrites. dtype='float16' is the key.
-    dist_mat = np.memmap(save_path, dtype='float16', mode='w+', shape=(N, N))
+    # Keep the .npy header so later np.load(..., mmap_mode=...) can reopen it.
+    dist_mat = np.lib.format.open_memmap(save_path, dtype='float16', mode='w+', shape=(N, N))
 
     print("Computing Cosine Similarity & Post-processing in blocks...")
     
@@ -741,6 +741,17 @@ def save_cosine_sim_float16(x, save_path, min_ = 0, max_ = 1, block_size=512):
     print(f"Saved float16 matrix to {save_path}")
     return dist_mat
 
+def load_existing_sim_matrix(MAT_PATH, n_samples, dtype='float16'):
+    try:
+        return np.load(MAT_PATH, mmap_mode='r')
+    except ValueError as exc:
+        expected_bytes = n_samples * n_samples * np.dtype(dtype).itemsize
+        actual_bytes = os.path.getsize(MAT_PATH)
+        if actual_bytes != expected_bytes:
+            raise
+        print(f"Loading legacy raw memmap matrix at {MAT_PATH}")
+        return np.memmap(MAT_PATH, dtype=dtype, mode='r', shape=(n_samples, n_samples))
+
 def load_sim_matrix(dataset, train, MAT_PATH, type_='DTW'):
     # tr = torch.load(f'data/{dataset}/train.pt')
     # train = tr['samples'].detach().cpu().numpy().astype(np.float64)
@@ -756,7 +767,7 @@ def load_sim_matrix(dataset, train, MAT_PATH, type_='DTW'):
         
     if os.path.exists(MAT_PATH):
         print(f"{type_} already exists")
-        sim_mat = np.load(MAT_PATH)
+        sim_mat = load_existing_sim_matrix(MAT_PATH, train.shape[0])
     else:
         if type_ == 'DTW':
             print(f"Saving {type_} ...")

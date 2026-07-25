@@ -23,6 +23,6 @@ cd /mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/Cr
 
 python src/test.py \
     --dataset_name SleepEDFx \
-    --checkpoint_path checkpoints/CroSSL_SleepEDFx_0112 \
+    --checkpoint_path checkpoints/CroSSL_SleepEDFx \
     --final_out_channels 128 \
     --output_dims 127

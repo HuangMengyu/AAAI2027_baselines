@@ -23,6 +23,6 @@ cd /mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/TF
 
 python test.py \
     --dataset_name SleepEDFx \
-    --checkpoint_path checkpoints/TFCC_multimodal_fnAB_cancel_SleepEDFx_0.08 \
+    --checkpoint_path checkpoints/warmup4_fnABC_cancel_SleepEDFx_0.07 \
     --final_out_channels 128 \
     --output_dims 127
