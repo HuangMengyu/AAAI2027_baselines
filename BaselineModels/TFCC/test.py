@@ -102,9 +102,9 @@ def main():
     parser["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # parser["print_p"] = True
     parser["Fold"] = 1
-    input_path = "/mimer/NOBACKUP/groups/naiss2025-22-1224/datasets_subject-wise/SleepEDFx/SleepCassette"
+    input_path = "/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_FNattract/datasets/datasets_subject-wise/SleepEDFx/SleepCassette"
     in_parser = argparse.ArgumentParser()
-    in_parser.add_argument('--checkpoint_path', type=str, default='/mimer/NOBACKUP/groups/naiss2025-22-1224/Codes/TFCC_badpositive/ExperimentLog/5fold_bp_A_25warm', help='checkpoint path for the model checkpoints')
+    in_parser.add_argument('--checkpoint_path', type=str, default='/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines/BaselineModels/TFCC/ExperimentLog/5fold_bp_A_25warm', help='checkpoint path for the model checkpoints')
     in_parser.add_argument('--frozen_backbone', type=str2bool, default=False, help='Whether to freeze the backbone during finetuning (defaults to False)')
     in_parser.add_argument('--dataset_name', type=str, default='SleepEDFx', choices=['SleepEDFx', 'PAMAP2', 'UCI-HAR', 'UCI-HAR_total'], help='dataset name')
     
@@ -112,7 +112,7 @@ def main():
 
     dataset_name = opt.dataset_name
     if dataset_name == 'SleepEDFx':
-        input_path = "/mimer/NOBACKUP/groups/naiss2025-22-1224/datasets_subject-wise/SleepEDFx/SleepCassette"
+        input_path = "/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_FNattract/datasets/datasets_subject-wise/SleepEDFx/SleepCassette"
         n_classes = 5
         mod1_dims = 2
         mod2_dims = 1
@@ -128,7 +128,7 @@ def main():
         # input_path = '/mimer/NOBACKUP/groups/naiss2025-22-1224/PAMAP2_256_overlap128_preprocessed_normalized'
         # input_path = "/mimer/NOBACKUP/groups/naiss2025-22-1224/PAMAP2_2s_windowed"
         # input_path = "/mimer/NOBACKUP/groups/naiss2025-22-1224/PAMAP2_10s_windowed"
-        input_path = '/mimer/NOBACKUP/groups/naiss2025-22-1224/PAMAP2_256_overlap128_normalized_9classes'
+        input_path = '/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_FNattract/datasets/PAMAP2_256_overlap128_normalized_9classes'
         
         # n_classes = 12
         n_classes = 9
@@ -141,9 +141,9 @@ def main():
    
     elif dataset_name in ['UCI-HAR', 'UCI-HAR_total']:
         if dataset_name == 'UCI-HAR_total':
-            input_path = '/mimer/NOBACKUP/groups/naiss2025-22-1224/UCI-HAR_total'
+            input_path = '/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_FNattract/datasets/UCI-HAR_total'
         else:
-            input_path = '/mimer/NOBACKUP/groups/naiss2025-22-1224/UCI-HAR'
+            input_path = '/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_FNattract/datasets/UCI-HAR'
         n_classes = 6
         mod1_dims = 3
         mod2_dims = 3

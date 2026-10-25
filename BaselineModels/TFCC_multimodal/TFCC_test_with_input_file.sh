@@ -1,29 +1,32 @@
 #!/usr/bin/env bash
-#SBATCH -A NAISS2026-4-351 -p alvis
+#SBATCH -A C3SE2026-1-12 -p vera
 #SBATCH -t 00:30:00
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=A40:1
 #SBATCH --job-name=TFCC-test
 #SBATCH --array=5-6
+#SBATCH --chdir=/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines/BaselineModels/TFCC_multimodal
 
-input_file=/mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/TFCC_multimodal/test_cancel_attract.txt
+set -e
+input_file=/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines/BaselineModels/TFCC_multimodal/test_cancel_attract.txt
 # Load parameters safely
 source <(sed -n "${SLURM_ARRAY_TASK_ID}p" "$input_file")
 
 module purge
-module load PyTorch-bundle/2.1.2-foss-2023a-CUDA-12.1.1
+module load Python/3.11.3-GCCcore-12.3.0
 module load scikit-learn/1.4.2-gfbf-2023a
-module load einops/0.7.0-GCCcore-12.3.0
+module load matplotlib/3.7.2-gfbf-2023a
+source /cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_FNattract/experiment_venv/bin/activate
 
 # echo "cut_off=${cut_off} attract_filter=${attract_filter}"
 echo "Running on node: $SLURMD_NODENAME"
 
 export CUDA_LAUNCH_BLOCKING=1
 export TORCH_DISTRIBUTED_DEBUG=DETAIL
-export PYTHONPATH="/mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines:$PYTHONPATH"
+export PYTHONPATH="/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines:$PYTHONPATH"
 
-# cd /mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/TFCC_multimodal
-cd /mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/TFCC_multimodal/
+# cd /cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines/BaselineModels/TFCC_multimodal
+cd /cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines/BaselineModels/TFCC_multimodal/
 
 
 srun --output="logs/test/${file_name}_%A_%a.out" \

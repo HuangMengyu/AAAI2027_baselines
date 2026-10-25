@@ -331,7 +331,7 @@ if __name__ == '__main__':
     small_classifier = False
     transformer_depth = 4
     if dataset_name == 'SleepEDFx':
-        dataset_path = '/mimer/NOBACKUP/groups/naiss2025-22-1224/datasets_subject-wise/SleepEDFx/SleepCassette'
+        dataset_path = '/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_FNattract/datasets/datasets_subject-wise/SleepEDFx/SleepCassette'
         n_classes = 5
         mod1_dims = 2
         mod2_dims = 1
@@ -339,7 +339,7 @@ if __name__ == '__main__':
         print("n_classes:", n_classes, "input_dims", mod1_dims, mod2_dims, "time_steps", time_steps)
     elif dataset_name == 'PAMAP2':
         
-        dataset_path = '/mimer/NOBACKUP/groups/naiss2025-22-1224/PAMAP2_256_overlap128_normalized_9classes'
+        dataset_path = '/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_FNattract/datasets/PAMAP2_256_overlap128_normalized_9classes'
         
         n_classes = 9
         mod1_dims = 9
@@ -349,9 +349,9 @@ if __name__ == '__main__':
         print("n_classes:", n_classes, "input_dims", mod1_dims, mod2_dims, "time_steps", time_steps)
     elif dataset_name in ['UCI-HAR', 'UCI-HAR_total']:
         if dataset_name == 'UCI-HAR_total':
-            dataset_path = '/mimer/NOBACKUP/groups/naiss2025-22-1224/UCI-HAR_total'
+            dataset_path = '/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_FNattract/datasets/UCI-HAR_total'
         else:
-            dataset_path = '/mimer/NOBACKUP/groups/naiss2025-22-1224/UCI-HAR'
+            dataset_path = '/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_FNattract/datasets/UCI-HAR'
         n_classes = 6
         mod1_dims = 3
         mod2_dims = 3

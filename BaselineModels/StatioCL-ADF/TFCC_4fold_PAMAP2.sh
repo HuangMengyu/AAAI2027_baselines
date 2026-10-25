@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#SBATCH -A NAISS2026-4-351 -p alvis
+#SBATCH -A C3SE2026-1-12 -p vera
 #SBATCH -t 04:00:00
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=A40:1
@@ -7,15 +7,17 @@
 #SBATCH --job-name=StatioCL-ADF_PAMAP2
 #SBATCH --array=1-4
 #SBATCH --output=logs_noautolag/PAMAP2/PAMAP2_lag2_%A_%a.out
+#SBATCH --chdir=/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines/BaselineModels/StatioCL-ADF
 
+set -e
 module purge
-module load PyTorch-bundle/2.1.2-foss-2023a-CUDA-12.1.1
+module load Python/3.11.3-GCCcore-12.3.0
 module load scikit-learn/1.4.2-gfbf-2023a
-module load einops/0.7.0-GCCcore-12.3.0
+module load matplotlib/3.7.2-gfbf-2023a
 
-python -m venv statsmodels_env
-source statsmodels_env/bin/activate
-python -m pip install statsmodels
+# python -m venv statsmodels_env
+source /cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_FNattract/experiment_venv/bin/activate
+# python -m pip install statsmodels
 
 export CUDA_LAUNCH_BLOCKING=1
 export TORCH_DISTRIBUTED_DEBUG=DETAIL
@@ -23,9 +25,9 @@ export TORCH_DISTRIBUTED_DEBUG=DETAIL
 echo ${CUDA_VISIBLE_DEVICES}
 echo "Running on node: $SLURMD_NODENAME"
 
-export PYTHONPATH="/mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/StatioCL-ADF:/mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines:$PYTHONPATH"
+export PYTHONPATH="/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines/BaselineModels/StatioCL-ADF:/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines:$PYTHONPATH"
 
-cd /mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/StatioCL-ADF
+cd /cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines/BaselineModels/StatioCL-ADF
 
 # mkdir -p $TMPDIR/TFCC_multimodal
 # For Testing:

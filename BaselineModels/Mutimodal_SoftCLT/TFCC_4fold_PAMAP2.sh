@@ -1,21 +1,23 @@
 #!/usr/bin/env bash
-#SBATCH -A NAISS2026-4-117 -p alvis
+#SBATCH -A C3SE2026-1-12 -p vera
 #SBATCH -t 02:00:00
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=A40:1
 #SBATCH --job-name=SoftCLT_PAMAP2
 #SBATCH --array=1-4
 #SBATCH --output=logs_onlyprior/SoftCLT_PAMAP_%A_%a.out
+#SBATCH --chdir=/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines/BaselineModels/Mutimodal_SoftCLT
 
+set -e
 module purge
-module load PyTorch-bundle/2.1.2-foss-2023a-CUDA-12.1.1
+module load Python/3.11.3-GCCcore-12.3.0
 module load scikit-learn/1.4.2-gfbf-2023a
-module load einops/0.7.0-GCCcore-12.3.0
+module load matplotlib/3.7.2-gfbf-2023a
 module load Python-bundle-PyPI/2023.06-GCCcore-12.3.0
 # module load TensorFlow/2.15.1-foss-2023a-CUDA-12.1.1
 
 # python -m venv torch_env
-source torch_env/bin/activate
+source /cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_FNattract/experiment_venv/bin/activate
 # pip install soft-dtw-pytorch
 # pip install fastdtw
 # pip install tslearn
@@ -26,9 +28,9 @@ export TORCH_DISTRIBUTED_DEBUG=DETAIL
 echo ${CUDA_VISIBLE_DEVICES}
 echo "Running on node: $SLURMD_NODENAME"
 
-export PYTHONPATH="/mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/Multimodal_SoftCLT:$PYTHONPATH"
+export PYTHONPATH="/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines/BaselineModels/Mutimodal_SoftCLT:/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines:$PYTHONPATH"
 
-cd /mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/Mutimodal_SoftCLT
+cd /cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines/BaselineModels/Mutimodal_SoftCLT
 
 # mkdir -p $TMPDIR/TFCC_multimodal
 # For Testing:

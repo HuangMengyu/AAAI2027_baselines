@@ -1,20 +1,22 @@
 #!/usr/bin/env bash
-#SBATCH -A NAISS2026-4-117 -p alvis
+#SBATCH -A C3SE2026-1-12 -p vera
 #SBATCH -t 01:00:00
 #SBATCH --ntasks=1
 #SBATCH --gpus-per-node=A40:1
 #SBATCH --job-name=FOCAL
 #SBATCH --array=1-5
 #SBATCH --output=logs/FOCAL_UCI-HAR_total_%A_%a.out
+#SBATCH --chdir=/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines/BaselineModels/focal
 
+set -e
 module purge
-module load PyTorch-bundle/2.1.2-foss-2023a-CUDA-12.1.1
+module load Python/3.11.3-GCCcore-12.3.0
 module load scikit-learn/1.4.2-gfbf-2023a
-module load einops/0.7.0-GCCcore-12.3.0
+module load matplotlib/3.7.2-gfbf-2023a
 module load IPython/8.14.0-GCCcore-12.3.0
 
 # python -m venv torch_env
-source torch_env/bin/activate
+source /cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_FNattract/experiment_venv/bin/activate
 # pip install tsai==0.3.9 --no-deps
 # pip install fastai py-cpuinfo
 # 1. Uninstall the problematic newer versions
@@ -32,9 +34,9 @@ export TORCH_DISTRIBUTED_DEBUG=DETAIL
 echo ${CUDA_VISIBLE_DEVICES}
 echo "Running on node: $SLURMD_NODENAME"
 
-export PYTHONPATH="/mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/focal:$PYTHONPATH"
+export PYTHONPATH="/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines/BaselineModels/focal:/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines:$PYTHONPATH"
 
-cd /mimer/NOBACKUP/groups/naiss2025-22-1224/AAAI2027_baselines/BaselineModels/focal
+cd /cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines/BaselineModels/focal
 
 # mkdir -p $TMPDIR/TFCC_multimodal
 # For Testing:
