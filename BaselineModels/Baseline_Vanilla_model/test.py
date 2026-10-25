@@ -99,7 +99,7 @@ def main():
     parser["Fold"] = 1
     in_parser = argparse.ArgumentParser()
     in_parser.add_argument('--dataset_name', type=str, default='SleepEDFx', choices=['SleepEDFx', 'PAMAP2', 'UCI-HAR', 'UCI-HAR_total'], help='dataset name')
-    in_parser.add_argument('--checkpoint_path', type=str, default='/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines/BaselineModels/Baseline_Vanilla_model/ExperimentLog/5fold_bp_A_25warm', help='checkpoint path for the model checkpoints')
+    in_parser.add_argument('--checkpoint_path', type=str, default='checkpoints/SleepEDFx', help='checkpoint path for the model checkpoints')
     
     in_parser.add_argument('--final_out_channels', type=int, default=128)
     in_parser.add_argument('--output_dims', type=int, default=127)

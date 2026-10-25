@@ -251,7 +251,10 @@ if __name__ == '__main__':
     parser.add_argument("--seeds", nargs='*', type=list, default=[0, 20, 40, 60, 80])
     parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--epochs", type=int, default=100)
-    parser.add_argument("--warm_epochs", type=int, default=50)
+    parser.add_argument("--warm_epochs", "--warm_epoch", type=int, default=50,
+                        help='Compatibility option; ignored by the vanilla baseline')
+    parser.add_argument('--filter', type=str2bool, default=False,
+                        help='Compatibility option; ignored by the vanilla baseline')
     parser.add_argument("--lr", type=float, default=1e-4)
 
     parser.add_argument('--repr-dims', type=int, default=320, help='The representation dimension (defaults to 320)')
@@ -264,6 +267,8 @@ if __name__ == '__main__':
     parser.add_argument('--output_dims', type=int, default=127)
 
     opt = parser.parse_args()
+    if opt.use_iteration:
+        parser.error("The vanilla baseline supports epoch training only; --use_iteration must be False")
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
@@ -281,7 +286,6 @@ if __name__ == '__main__':
         os.makedirs(root_save_path, exist_ok=True)
 
     n_epoch = opt.epochs
-    warm_epoch = opt.warm_epochs
     # n_epoch_ft = opt.epochs
     n_epoch_ft = 10
     lr = opt.lr
@@ -302,7 +306,6 @@ if __name__ == '__main__':
 
 
     print("n_epoch: ", n_epoch)
-    print("warm_epoch: ", warm_epoch)
     print("n_epoch_ft: ", n_epoch_ft)
     print('lr', lr)
     print("batch_size", batch_size)
@@ -320,7 +323,6 @@ if __name__ == '__main__':
 
     # set dataset path and current fold
     dataset_name = opt.dataset_name
-    small_classifier = False
     transformer_depth = 4
     if dataset_name == 'SleepEDFx':
         dataset_path = '/cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_FNattract/datasets/datasets_subject-wise/SleepEDFx/SleepCassette'
@@ -394,19 +396,17 @@ if __name__ == '__main__':
             hidden_dim=64,
             batch_size=batch_size,
             num_epochs=n_epoch,
-            warm_epochs=warm_epoch,
+            warm_epochs=opt.warm_epochs,
+            filter=opt.filter,
             lr = lr,
             use_iteration=use_iteration,
             num_iter=num_iter,
-            cut_off = [opt.cut_off_uni, opt.cut_off_multi],
-            attract_filter = [opt.attract_filter_uni, opt.attract_filter_multi],
-            small_classifier = small_classifier,
             depth=transformer_depth
         )
         
         if ssl:
             # Pretraining
-            self_supervised_learning(dataset_name, i, model, pretrain_data, n_epoch, lr, batch_size_ssl, device, model_save_path, use_iteration=use_iteration)
+            self_supervised_learning(dataset_name, i, model, pretrain_data, batch_size_ssl, device, model_save_path, use_iteration=use_iteration)
             
         
         pretrained_weights = os.path.join(model_save_path, f'Pretrained_Model_{i}.pkl')
