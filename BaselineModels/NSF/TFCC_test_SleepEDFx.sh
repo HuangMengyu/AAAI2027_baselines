@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH -A C3SE2026-1-12 -p vera
 #SBATCH -t 00:30:00
-#SBATCH --ntasks=1
 #SBATCH --gpus-per-node=A40:1
 #SBATCH --job-name=TFCC-test
 #SBATCH --output=logs/test/SleepEDFx_%A.out
