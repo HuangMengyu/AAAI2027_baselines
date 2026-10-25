@@ -252,7 +252,8 @@ if __name__ == '__main__':
     parser.add_argument("--seeds", nargs='*', type=list, default=[0, 20, 40, 60, 80])
     parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--epochs", type=int, default=100)
-    parser.add_argument("--warm_epochs", type=int, default=50)
+    parser.add_argument("--warm_epochs", type=int, default=50,
+                        help='Number of initial SSL epochs without NSF filtering; 0 disables warmup')
     parser.add_argument("--lr", type=float, default=1e-4)
 
     parser.add_argument('--repr-dims', type=int, default=320, help='The representation dimension (defaults to 320)')
@@ -264,9 +265,11 @@ if __name__ == '__main__':
     parser.add_argument('--final_out_channels', type=int, default=128)
     parser.add_argument('--output_dims', type=int, default=127)
     parser.add_argument('--nsf_threshold', type=validate_nsf_threshold, default=-1,
-                        help='Shared NSF hardness threshold for all SSL branches; -1 disables filtering')
+                        help='Shared NSF hardness threshold for all SSL losses; -1 disables filtering')
 
     opt = parser.parse_args()
+    if opt.warm_epochs < 0:
+        parser.error("--warm_epochs must be nonnegative")
     if opt.use_iteration:
         parser.error("NSF supports epoch training only; --use_iteration must be False")
     

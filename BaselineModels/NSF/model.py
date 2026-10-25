@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from models.TC import TC
 from models.NTXent_loss import *
-from models.loss import loss_ntxent, loss_ntxent_class, validate_nsf_threshold
+from models.loss import loss_ntxent, validate_nsf_threshold
 
 import torch.optim as optim
 
@@ -95,6 +95,8 @@ class TFCC(nn.Module):
         ):
         super(TFCC, self).__init__()
         self.nsf_threshold = validate_nsf_threshold(nsf_threshold)
+        if warm_epochs < 0:
+            raise ValueError("warm_epochs must be nonnegative")
         if use_iteration:
             raise NotImplementedError("NSF supports epoch training only; use_iteration must be False")
         self.EEG_encoder = EEG_encoder
@@ -168,7 +170,7 @@ class TFCC(nn.Module):
                     x = (EEG, EOG, EEG_aug, EOG_aug)
 
                     
-                    sum_1, L_C_T, L_C_F, L_C_TF, pos_sim_T, pos_sim_F, pos_sim_TF, neg_sim_T, neg_sim_F, neg_sim_TF, _, _, _, _, _, _ = self.loss_compute(x)
+                    sum_1, L_C_T, L_C_F, L_C_TF, pos_sim_T, pos_sim_F, pos_sim_TF, neg_sim_T, neg_sim_F, neg_sim_TF, _, _, _, _, _, _ = self.loss_compute(x, epoch=e)
                     
                     loss_C_T = torch.mean(L_C_T)
                     loss_C_F = torch.mean(L_C_F)
@@ -187,8 +189,10 @@ class TFCC(nn.Module):
             pbar.set_description(str(sum(losses) / len(losses)))
 
 
-    def loss_compute(self, x):
-        
+    def loss_compute(self, x, epoch=0):
+        # Epochs are zero-based: enable NSF after warm_epochs complete epochs.
+        nsf_threshold = self.nsf_threshold if epoch >= self.warm_epochs else -1
+
         EEG, EOG, EEG_aug, EOG_aug = x[0], x[1], x[2], x[3]
         EEG_feat = self.EEG_encoder(EEG)
         EEG_aug_feat = self.EEG_encoder(EEG_aug)
@@ -200,15 +204,15 @@ class TFCC(nn.Module):
         EOG_feat = F.normalize(EOG_feat, dim=1)
         EOG_aug_feat = F.normalize(EOG_aug_feat, dim=1)
 
-        L_T, z_T, c_T = self.EEG_contrasting(EEG_feat, EEG_aug_feat, nsf_threshold=self.nsf_threshold)
-        L_T_aug, _, c_T_aug = self.EEG_contrasting(EEG_aug_feat, EEG_feat, nsf_threshold=self.nsf_threshold)
+        L_T, z_T, c_T = self.EEG_contrasting(EEG_feat, EEG_aug_feat, nsf_threshold=nsf_threshold)
+        L_T_aug, _, c_T_aug = self.EEG_contrasting(EEG_aug_feat, EEG_feat, nsf_threshold=nsf_threshold)
 
-        L_F, z_F, c_F = self.EOG_contrasting(EOG_feat, EOG_aug_feat, nsf_threshold=self.nsf_threshold)
-        L_F_aug, _, c_F_aug = self.EOG_contrasting(EOG_aug_feat, EOG_feat, nsf_threshold=self.nsf_threshold)
+        L_F, z_F, c_F = self.EOG_contrasting(EOG_feat, EOG_aug_feat, nsf_threshold=nsf_threshold)
+        L_F_aug, _, c_F_aug = self.EOG_contrasting(EOG_aug_feat, EOG_feat, nsf_threshold=nsf_threshold)
 
        
-        L_C_T, pos_sim_T, neg_sim_T, num_cancel_t, num_attract_t = loss_ntxent([c_T, c_T_aug], self.device, nsf_threshold=self.nsf_threshold)
-        L_C_F, pos_sim_F, neg_sim_F, num_cancel_f, num_attract_f = loss_ntxent([c_F, c_F_aug], self.device, nsf_threshold=self.nsf_threshold)
+        L_C_T, pos_sim_T, neg_sim_T, _, _ = loss_ntxent([c_T, c_T_aug], self.device, nsf_threshold=nsf_threshold)
+        L_C_F, pos_sim_F, neg_sim_F, _, _ = loss_ntxent([c_F, c_F_aug], self.device, nsf_threshold=nsf_threshold)
 
 
         
@@ -217,11 +221,9 @@ class TFCC(nn.Module):
         c_T_shared = self.shared_projection_head_1(z_T)
         c_F_shared = self.shared_projection_head_2(z_F)
 
-        L_C_TF_1, pos_sim_TF_1, neg_sim_TF_1, num_cancel_tf_1, num_attract_tf_1 = loss_ntxent([c_T_shared, c_F_shared], self.device, nsf_threshold=self.nsf_threshold)
-        L_C_TF_2, pos_sim_TF_2, neg_sim_TF_2, num_cancel_tf_2, num_attract_tf_2 = loss_ntxent([c_F_shared, c_T_shared], self.device, nsf_threshold=self.nsf_threshold)
+        L_C_TF_1, pos_sim_TF_1, neg_sim_TF_1, _, _ = loss_ntxent([c_T_shared, c_F_shared], self.device, nsf_threshold=nsf_threshold)
+        L_C_TF_2, pos_sim_TF_2, neg_sim_TF_2, _, _ = loss_ntxent([c_F_shared, c_T_shared], self.device, nsf_threshold=nsf_threshold)
         
-        num_cancel_tf = num_cancel_tf_1 + num_cancel_tf_2
-        num_attract_tf = num_attract_tf_1 + num_attract_tf_2
         L_C_TF = (L_C_TF_1 + L_C_TF_2) / 2
         pos_sim_TF = torch.cat((pos_sim_TF_1, pos_sim_TF_2), dim=0)
         neg_sim_TF = torch.cat((neg_sim_TF_1, neg_sim_TF_2), dim=0)
@@ -231,7 +233,7 @@ class TFCC(nn.Module):
         
         sum_1 = L_T+L_T_aug+L_F+L_F_aug
 
-        return sum_1, L_C_T, L_C_F, L_C_TF, pos_sim_T, pos_sim_F, pos_sim_TF, neg_sim_T, neg_sim_F, neg_sim_TF, num_cancel_t, num_attract_t, num_cancel_f, num_attract_f, num_cancel_tf, num_attract_tf
+        return sum_1, L_C_T, L_C_F, L_C_TF, pos_sim_T, pos_sim_F, pos_sim_TF, neg_sim_T, neg_sim_F, neg_sim_TF, 0, 0, 0, 0, 0, 0
 
         
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 #SBATCH -A C3SE2026-1-12 -p vera
-#SBATCH -t 02:00:00
-#SBATCH --ntasks=1
+#SBATCH -t 00:40:00
 #SBATCH --gpus-per-node=A40:1
 #SBATCH --job-name=TFCC_multimodal
 #SBATCH --array=1-4
@@ -32,15 +31,15 @@ cd /cephyr/NOBACKUP/groups/multimodal_learning_cse/AAAI2027_baselines/BaselineMo
 # mkdir -p $TMPDIR/TFCC_multimodal
 # For Testing:
 python main_5fold.py \
-    --nsf_threshold "${NSF_THRESHOLD:-0.9}" \
     --seq_len 3000 --in_dim 3 \
     --dataset_name PAMAP2 \
     --current_num_fold ${SLURM_ARRAY_TASK_ID} \
     --epochs 10 \
-    --warm_epochs 5 \
+    --warm_epochs 1 \
     --model_save_path checkpoints/PAMAP2 \
     --batch_size 128 \
     --lr 1e-3 \
+    --nsf_threshold 0.9 \
     --ssl True \
     --final_out_channels 128 \
     --output_dims 127
